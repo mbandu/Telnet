@@ -100,6 +100,7 @@ namespace Telnet
                     }
                     catch (Exception ex)
                     {
+                        Debug.WriteLine(ex.Message);
                     }
                 }
                 return false;
@@ -124,6 +125,7 @@ namespace Telnet
 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine(ex.Message);
                 }
                 _Client.Close();
                 _Client = null;
@@ -204,12 +206,15 @@ namespace Telnet
             }
             catch (ObjectDisposedException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (ApplicationException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             finally
             {
@@ -300,12 +305,15 @@ namespace Telnet
             }
             catch (NullReferenceException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (ObjectDisposedException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             finally
             {

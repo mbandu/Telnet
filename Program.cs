@@ -1,4 +1,5 @@
 ﻿using System;
+using Telnet;
 
 namespace BB_Virtual_Port_Server
 {
@@ -6,6 +7,7 @@ namespace BB_Virtual_Port_Server
     {
         static void Main(string[] args)
         {
+            SocketClient sc = new SocketClient();
             Console.WriteLine("Hello World!");
         }
     }
