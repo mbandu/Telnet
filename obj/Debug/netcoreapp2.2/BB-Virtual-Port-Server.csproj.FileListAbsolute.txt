@@ -1,0 +1,13 @@
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.deps.json
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.runtimeconfig.json
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.runtimeconfig.dev.json
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.dll
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.pdb
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.csprojAssemblyReference.cache
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.csproj.CoreCompileInputs.cache
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.AssemblyInfoInputs.cache
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.AssemblyInfo.cs
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.dll
+D:\IoT\BB-Virtual-Port-Server\obj\Debug\netcoreapp2.2\BB-Virtual-Port-Server.pdb
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\BB-Virtual-Port-Server.dll.config
+D:\IoT\BB-Virtual-Port-Server\bin\Debug\netcoreapp2.2\NLog.config

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Telnet
 {
@@ -22,6 +23,7 @@ namespace Telnet
         public delegate void OnSettingChangedHandler(object sender);
         public event OnSettingChangedHandler OnSettingChanged;
 
+       
         private bool _RtsInbound;
         private bool _CtsOutbound;
         private bool _DsrOutbound;
@@ -30,6 +32,7 @@ namespace Telnet
         private bool _XonXoffInbound;
         private bool _XonXoffOutbound;        
 
+        
         public bool RtsInbound 
         {
             get { return _RtsInbound; }
@@ -282,6 +285,30 @@ namespace Telnet
             THRE = 0x20,              // Transfer(Transmit) Holding Register Empty
             TEMT = 0x40,            // Transfer Shift Register (Transmitter) Empty
             TimeoutError = 0x80,
+        }
+
+        public delegate void OnLogHandler(string Msg, LogLevel LogLevel);
+        public virtual event OnLogHandler OnLog;
+
+        private void _Log(string Msg, LogLevel LogLevel = LogLevel.Information) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel);
+        }
+        private void _LogError(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Error);
+        }
+        private void _LogDebug(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Debug);
+        }        
+        private void _LogWarning(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Warning);
+        }
+        private void _LogCritical(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Critical);
         }
 
         public RFC2217Option(bool bServer)
@@ -543,7 +570,7 @@ namespace Telnet
                 case Command.SIGNATURE:
                     System.Text.Encoding enc = System.Text.Encoding.ASCII;
                     _Signature = enc.GetString(Data, i, OptionRelatedDataLength);
-                    Debug.WriteLine("SIGNATURE" + Signature);
+                    _LogDebug("SIGNATURE" + Signature);
                     if (OnSignatureChanged != null)
                         OnSignatureChanged(this);
                     break;
@@ -557,7 +584,7 @@ namespace Telnet
                     if (temp != 0)
                     {
                         _BaudRate = temp;
-                        Debug.WriteLine("SET_BAUDRATE: " + BaudRate.ToString());
+                        _LogDebug("SET_BAUDRATE: " + BaudRate.ToString());
                         if (OnBaudRateChanged != null)
                             OnBaudRateChanged(this);
                     }
@@ -569,7 +596,7 @@ namespace Telnet
                     if (Data[i] != 0)
                     {
                         _DataSize = Data[i];
-                        Debug.WriteLine("SET_DATASIZE: " + DataSize.ToString());
+                        _LogDebug("SET_DATASIZE: " + DataSize.ToString());
                         if (OnDataSizeChanged != null)
                             OnDataSizeChanged(this);
                     }
@@ -581,7 +608,7 @@ namespace Telnet
                     if (Data[i] != (byte)ParityType.Request)
                     {
                         _Parity = Data[i];
-                        Debug.WriteLine("SET_PARITY: " + Parity.ToString());
+                        _LogDebug("SET_PARITY: " + Parity.ToString());
                         if (OnParityChanged != null)
                             OnParityChanged(this);
                     }
@@ -593,7 +620,7 @@ namespace Telnet
                     if (Data[i] != (byte)StopBitsType.Request)
                     {
                         _StopBits = Data[i];
-                        Debug.WriteLine("SET_STOPSIZE: " + StopBits.ToString());
+                        _LogDebug("SET_STOPSIZE: " + StopBits.ToString());
                         if (OnStopBitsChanged != null)
                             OnStopBitsChanged(this);
                     }
@@ -611,19 +638,19 @@ namespace Telnet
                             break;
                         case ControlCommand.USE_NO_FLOWCONTROL:
                             FlowControl.SetNoFlowControl();
-                            Debug.WriteLine("SET_CONTROL->: USE_NO_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_NO_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_XONXOFF_OUTBOUND_FLOWCONTROL:
                             FlowControl.SetXonXoffFlowControl();
-                            Debug.WriteLine("SET_CONTROL->: USE_XONXOFF_OUTBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_XONXOFF_OUTBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_HARDWARE_OUTBOUND_FLOWCONTROL:
                             FlowControl.SetHardwareFlowControl();
-                            Debug.WriteLine("SET_CONTROL->: USE_HARDWARE_OUTBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_HARDWARE_OUTBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
@@ -632,13 +659,13 @@ namespace Telnet
                             break;
                         case ControlCommand.SET_BREAK_STATE:
                             _BreakState = true;
-                            Debug.WriteLine("SET_CONTROL->: SET_BREAK_STATE");
+                            _LogDebug("SET_CONTROL->: SET_BREAK_STATE");
                             if (OnBreakStateChanged != null)
                                 OnBreakStateChanged(this);
                             break;
                         case ControlCommand.CLEAR_BREAK_STATE:
                             _BreakState = false;
-                            Debug.WriteLine("SET_CONTROL->: CLEAR_BREAK_STATE");
+                            _LogDebug("SET_CONTROL->: CLEAR_BREAK_STATE");
                             if (OnBreakStateChanged != null)
                                 OnBreakStateChanged(this);
                             break;
@@ -647,13 +674,13 @@ namespace Telnet
                             break;
                         case ControlCommand.SET_DTR_STATE:
                             _DtrEnable = true;
-                            Debug.WriteLine("SET_CONTROL->: SET_DTR_STATE");
+                            _LogDebug("SET_CONTROL->: SET_DTR_STATE");
                             if (OnDtrSignalStateChanged != null)
                                 OnDtrSignalStateChanged(this);
                             break;
                         case ControlCommand.CLEAR_DTR_STATE:
                             _DtrEnable = false;
-                            Debug.WriteLine("SET_CONTROL->: CLEAR_DTR_STATE");
+                            _LogDebug("SET_CONTROL->: CLEAR_DTR_STATE");
                             if (OnDtrSignalStateChanged != null)
                                 OnDtrSignalStateChanged(this);
                             break;
@@ -662,13 +689,13 @@ namespace Telnet
                             break;
                         case ControlCommand.SET_RTS_STATE:
                             _RtsEnable = true;
-                            Debug.WriteLine("SET_CONTROL->: SET_RTS_STATE");
+                            _LogDebug("SET_CONTROL->: SET_RTS_STATE");
                             if (OnRtsSignalChanged != null)
                                 OnRtsSignalChanged(this);
                             break;
                         case ControlCommand.CLEAR_RTS_STATE:
                             _RtsEnable = false;
-                            Debug.WriteLine("SET_CONTROL->: CLEAR_RTS_STATE");
+                            _LogDebug("SET_CONTROL->: CLEAR_RTS_STATE");
                             if (OnRtsSignalChanged != null)
                                 OnRtsSignalChanged(this);
                             break;
@@ -679,37 +706,37 @@ namespace Telnet
                             FlowControl.RtsInbound = false;
                             FlowControl.DtrInbound = false;
                             FlowControl.XonXoffInbound = false;
-                            Debug.WriteLine("SET_CONTROL->: USE_NO_INBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_NO_INBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_XONXOFF_INBOUND_FLOWCONTROL:
                             FlowControl.XonXoffInbound = true;
-                            Debug.WriteLine("SET_CONTROL->: USE_XONXOFF_INBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_XONXOFF_INBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_HARDWARE_INBOUND_FLOWCONTROL:
                             FlowControl.RtsInbound = true;
-                            Debug.WriteLine("SET_CONTROL->: USE_HARDWARE_INBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_HARDWARE_INBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_DCD_OUTBOUND_FLOWCONTROL:
                             FlowControl.DcdOutbound = true;
-                            Debug.WriteLine("SET_CONTROL->: USE_DCD_OUTBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_DCD_OUTBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_DTR_INBOUND_FLOWCONTROL:
                             FlowControl.DtrInbound = true;
-                            Debug.WriteLine("SET_CONTROL->: USE_DTR_INBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_DTR_INBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
                         case ControlCommand.USE_DSR_OUTBOUND_FLOWCONTROL:
                             FlowControl.SetDtrDsrFlowControl();
-                            Debug.WriteLine("SET_CONTROL->: USE_DSR_OUTBOUND_FLOWCONTROL");
+                            _LogDebug("SET_CONTROL->: USE_DSR_OUTBOUND_FLOWCONTROL");
                             if (OnFlowControlChanged != null)
                                 OnFlowControlChanged(this, FlowControl);
                             break;
@@ -720,28 +747,28 @@ namespace Telnet
                 case Command.FLOWCONTROL_SUSPEND:
                     Debug.Assert(OptionRelatedDataLength == 0);
                     _Suspend = true;
-                    Debug.WriteLine("FLOWCONTROL_SUSPEND: Flow Suspended");
+                    _LogDebug("FLOWCONTROL_SUSPEND: Flow Suspended");
                     if (OnSuspendStateChanged != null)
                         OnSuspendStateChanged(this);
                     break;
                 case Command.FLOWCONTROL_RESUME:
                     Debug.Assert(OptionRelatedDataLength == 0);
                     _Suspend = false;
-                    Debug.WriteLine("FLOWCONTROL_SUSPEND: Flow Suspended");
+                    _LogDebug("FLOWCONTROL_SUSPEND: Flow Suspended");
                     if (OnSuspendStateChanged != null)
                         OnSuspendStateChanged(this);
                     break;
                 case Command.SET_LINESTATE_MASK:
                     Debug.Assert(OptionRelatedDataLength == 1);
                     _LineStateMask = Data[i];
-                    Debug.WriteLine("SET_STOPSIZE: 0x" + LineStateMask.ToString("X"));
+                    _LogDebug("SET_STOPSIZE: 0x" + LineStateMask.ToString("X"));
                     if (OnLineStateMaskChanged != null)
                         OnLineStateMaskChanged(this);
                     break;
                 case Command.SET_MODEMSTATE_MASK:
                     Debug.Assert(OptionRelatedDataLength == 1);
                     _ModemStateMask = Data[i];
-                    Debug.WriteLine("SET_STOPSIZE: 0x" + LineStateMask.ToString("X"));
+                    _LogDebug("SET_STOPSIZE: 0x" + LineStateMask.ToString("X"));
                     if (OnModemStateMaskChanged != null)
                         OnModemStateMaskChanged(this);
                     break;
@@ -775,9 +802,9 @@ namespace Telnet
                     TEMT = (Data[i] & (byte)LineState.TEMT) != 0 ? true : false;
                     TimeoutError = (Data[i] & (byte)LineState.TimeoutError) != 0 ? true : false;
 
-                    Debug.WriteLine("NOTIFY_LINESTATE: DataReady:" + DataReady.ToString() + " Overrun:" + Overrun.ToString() +
+                    _LogDebug("NOTIFY_LINESTATE: DataReady:" + DataReady.ToString() + " Overrun:" + Overrun.ToString() +
                                         " ParityError:" + ParityError.ToString() + " FramingError:" + FramingError.ToString());
-                    Debug.WriteLine("                  BreakDetected:" + BreakDetected.ToString() + " THRE:" + THRE.ToString() +
+                    _LogDebug("                  BreakDetected:" + BreakDetected.ToString() + " THRE:" + THRE.ToString() +
                                         " TEMT:" + TEMT.ToString() + " TimeoutError:" + TimeoutError.ToString());
                     
                     if (OnLineStateChanged != null)
@@ -792,7 +819,7 @@ namespace Telnet
                     Dsr = (Data[i] & (byte)ModemState.DSR) != 0 ? true : false;
                     Ri = (Data[i] & (byte)ModemState.RI) != 0 ? true : false;
                     Rlsd = (Data[i] & (byte)ModemState.RLSD) != 0 ? true : false;
-                    Debug.WriteLine("NOTIFY_MODEMSTATE: Cts:" + Cts.ToString() + " Dsr:" + Dsr.ToString() +
+                    _LogDebug("NOTIFY_MODEMSTATE: Cts:" + Cts.ToString() + " Dsr:" + Dsr.ToString() +
                                         " Ri:" + Ri.ToString() + " Rlsd:" + Rlsd.ToString());
                     if (OnModemStateChanged != null)
                         OnModemStateChanged(this, Cts, Dsr, Ri, Rlsd);

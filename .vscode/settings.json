@@ -1,0 +1,35 @@
+{
+    "deploy.reloaded": {
+        "packages": [
+            {
+            "button": true,
+            "name": "virtual-port-server",
+            "description": "virtual port package",
+            "files": [
+                "bin/Production/netcoreapp2.2/linux-arm/publish/*.*",
+                "bin/Production/netcoreapp2.2/linux-arm/publish/*",
+            ],
+            "deployOnChange": true,
+            }
+        ],
+        "targets": [
+            {
+                "type": "sftp",
+                "name": "myDevice",
+                "description": "Home Folder",
+                "dir": "/usr/share/brainboxes/virtual-port-server",
+                "host": "10.0.0.101",
+                "port": 22,
+                "user": "bb",
+                "password": "76cb",
+                "modes": {
+                    "/usr/share/brainboxes/virtual-port-server/Virtual-Port-Server": 755,
+                },
+                "mappings": {
+                    "/bin/Production/netcoreapp2.2/linux-arm/publish/*": "/",
+                }
+            },
+        ]
+    }
+    
+}

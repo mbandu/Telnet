@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Telnet
 {
@@ -51,11 +52,12 @@ namespace Telnet
         public delegate void OnDisconnectedHandler(TelnetBase Sender);
         public delegate void OnDataReceivedHandler(TelnetBase Sender, byte[] Data);
         public delegate void OnOptionNegotiatedHandler(TelnetBase Sender, byte OptionCode );
+        public delegate void OnLogHandler(string Msg, LogLevel LogLevel);
         public virtual event OnConnectedHandler OnConnected;
         public virtual event OnDisconnectedHandler OnDisconnected;
         public virtual event OnDataReceivedHandler OnDataReceived;
         public virtual event OnOptionNegotiatedHandler OnOptionNegotiated;
- 
+         public virtual event OnLogHandler OnLog;
         protected TelnetState _CurrentTelNetState;
         protected Dictionary<byte, TelnetOption> _Options;
         private bool _bOptionCodeSaved = false;
@@ -66,12 +68,31 @@ namespace Telnet
 
         public virtual bool SendToNetwork(byte[] Data) { return false; }
 
- 
+        protected void _Log(string Msg, LogLevel LogLevel = LogLevel.Information) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel);
+        }
+        protected void _LogError(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Error);
+        }
+        protected void _LogDebug(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Debug);
+        }        
+        protected void _LogWarning(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Warning);
+        }
+        protected void _LogCritical(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Critical);
+        }
         protected void _ProcessIncomingData(SocketClient client, byte[] DataStream)
         {
             List<byte> RxData = new List<byte>();
             int iCount = 0;
-            Debug.WriteLine("Incoming => " + DataStream.Length.ToString());
+            _Log("Incoming => " + DataStream.Length.ToString());
             lock (this)
             {
 
@@ -209,13 +230,13 @@ namespace Telnet
         {
             if (_Options.ContainsKey(Option) == false)
             {
-                Debug.WriteLine("(WILL?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
+                _LogDebug("(WILL?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
                 SendToNetwork(TelnetOption.GetNegotiationResponseDont(Option));
                 return;
             }
             if (!_Options[Option].IsNegotiatedSuccessfully())
             {
-                Debug.WriteLine("(WILL?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
+                _LogDebug("(WILL?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
                 byte[] Response = _Options[Option].GetNegotiationResponsePacket(TelnetOption.OptionNegotiationType.WILL);
                 if (Response != null)
                     SendToNetwork(Response);
@@ -233,13 +254,13 @@ namespace Telnet
 
             if (_Options.ContainsKey(Option) == false)
             {
-                Debug.WriteLine("(WONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
+                _LogDebug("(WONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
                 SendToNetwork(TelnetOption.GetNegotiationResponseDont(Option));
                 return;
             }
             if (!_Options[Option].IsNegotiatedSuccessfully())
             {
-                Debug.WriteLine("(WONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
+                _LogDebug("(WONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
                 byte[] Response = _Options[Option].GetNegotiationResponsePacket(TelnetOption.OptionNegotiationType.WONT);
                 if (Response != null)
                     SendToNetwork(Response);
@@ -250,13 +271,13 @@ namespace Telnet
         {
             if (_Options.ContainsKey(Option) == false)
             {
-                Debug.WriteLine("(DO?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
+                _LogDebug("(DO?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
                 SendToNetwork(TelnetOption.GetNegotiationResponseWont(Option));
                 return;
             }
             if (!_Options[Option].IsNegotiatedSuccessfully())
             {
-                Debug.WriteLine("(DO?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
+                _LogDebug("(DO?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
                 byte[] Response = _Options[Option].GetNegotiationResponsePacket(TelnetOption.OptionNegotiationType.DO);
                 if (Response != null)
                     SendToNetwork(Response);
@@ -272,13 +293,13 @@ namespace Telnet
         {
             if (_Options.ContainsKey(Option) == false)
             {
-                Debug.WriteLine("(DONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
+                _LogDebug("(DONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") not supported.");
                 SendToNetwork(TelnetOption.GetNegotiationResponseWont(Option));
                 return;
             }
             if (!_Options[Option].IsNegotiatedSuccessfully())
             {
-                Debug.WriteLine("(DONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
+                _LogDebug("(DONT?)OptionCode: " + Option.ToString() + "(0x" + Option.ToString("X") + ") negotiated OK.");
                 byte[] Response = _Options[Option].GetNegotiationResponsePacket(TelnetOption.OptionNegotiationType.DONT);
                 if (Response != null)
                     SendToNetwork(Response);

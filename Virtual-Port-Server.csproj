@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(Configuration)' != 'Production'">
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Virtual_Port_Server</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Production'">
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Virtual_Port_Server</RootNamespace>
+    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DotNet.NLog.NetCore" Version="2.2.0"/>
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.3.0"/>
+    <PackageReference Include="NLog" Version="4.5.11"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0"/>
+    <PackageReference Include="NLog.Config" Version="4.5.11"/>
+    <PackageReference Include="CommandLineParser" Version="2.3.0"/>
+    <PackageReference Include="SerialPortStream" Version="2.2.0"/>
+    <PackageReference Include="MSBuildConfigurationDefaults" Version="1.0.1"/>
+    <PackageReference Include="System.IO.Ports" Version="4.5.0"/>
+  </ItemGroup>
+</Project>

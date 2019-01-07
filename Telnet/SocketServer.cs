@@ -6,6 +6,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Telnet
 {
@@ -32,16 +33,40 @@ namespace Telnet
         public delegate void OnConnectedHandler(object sender, IPEndPoint RemoteEndPoint);
         public delegate void OnDisconnectedHandler(object sender);
         public delegate void OnDataReceivedHandler(object sender, byte[] Data);
+        public delegate void OnLogHandler(string Msg, LogLevel LogLevel);
         public event OnConnectedHandler OnConnected;
         public event OnDisconnectedHandler OnDisconnected;
         public event OnDataReceivedHandler OnDataReceived;
+        public virtual event OnLogHandler OnLog;
 
+        protected void _Log(string Msg, LogLevel LogLevel = LogLevel.Information) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel);
+        }
+        protected void _LogError(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Error);
+        }
+        protected void _LogDebug(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Debug);
+        }        
+        protected void _LogWarning(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Warning);
+        }
+        protected void _LogCritical(string Msg) {
+            if ( OnLog != null )
+                OnLog(Msg, LogLevel.Critical);
+        }
         public int Port { get; set; }
         public TimeSpan ConnectionTimeout { get; set; }
         public TimeSpan ReceiveTimeout { get; set; }
         public TimeSpan SendTimeout { get; set; }
         public int ReceiveBufferSize { get; set; }
         public int SendBufferSize { get; set; }
+
+        private bool bStopThread = false;
 
         public bool Start()
         {
@@ -51,11 +76,12 @@ namespace Telnet
                 _ServerListener.Start();
                 _StartThread = new Thread(_StartThreadFunction);
                 _StartThread.IsBackground = true;
+                bStopThread = false;
                 _StartThread.Start(this);
             }
             catch(Exception ex)
             {
-                throw;
+                throw ex;
             }
 
             return true;
@@ -63,18 +89,22 @@ namespace Telnet
 
         public bool Stop()
         {
+            bStopThread = true;
+            _Log("SocketServer::Stop() 1");
             foreach (SocketClient c in _Connections)
             {
                 c.Disconnect();
             }
+            _Log("SocketServer::Stop() 2");
             if ( _ServerListener != null )
-                _ServerListener.Stop();
+                _ServerListener.Server.Disconnect(true);//Close();
 
-            if (_StartThread != null && _StartThread.IsAlive)
-            {
-                if (_StartThread.Join(new TimeSpan(0, 0, 5)) == false)
-                    _StartThread.Abort();
-            }
+            _Log("SocketServer::Stop() 3");
+            //if (_StartThread != null && _StartThread.IsAlive)
+            //{
+            //    if (_StartThread.Join(new TimeSpan(0, 0, 5)) == false)
+            //        _StartThread.Abort();
+            //}
 
             return true;
         }
@@ -105,7 +135,7 @@ namespace Telnet
             try
             {
  
-                while (true)
+                while (!s.bStopThread)
                 {
                     SocketClient client;
                     TcpClient c = s._ServerListener.AcceptTcpClient();
@@ -131,16 +161,19 @@ namespace Telnet
             }
             catch (SocketException ex)
             {
-                
+                Debug.WriteLine(ex.Message);                
             }
             catch (NullReferenceException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (ObjectDisposedException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             catch (ApplicationException ex)
             {
+                Debug.WriteLine(ex.Message);
             }
             finally
             {

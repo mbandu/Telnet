@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Telnet
 {
@@ -16,11 +17,19 @@ namespace Telnet
             _Server.OnConnected += new SocketServer.OnConnectedHandler(_Server_OnConnected);
             _Server.OnDisconnected += new SocketServer.OnDisconnectedHandler(_Server_OnDisconnected);
             _Options = new Dictionary<byte, TelnetOption>();
+
+            _Server.OnLog += LogHandler;
         }
 
 
         ~TelnetServer()
         {
+        }
+
+        void LogHandler(string Msg, LogLevel logLevel) 
+        {
+            Console.WriteLine(Msg);
+            _Log(Msg, logLevel);
         }
 
         //public delegate void OnDataReceivedHandler(object sender, byte[] Data);
@@ -30,6 +39,7 @@ namespace Telnet
         public override event OnOptionNegotiatedHandler OnOptionNegotiated;
 
         private SocketServer _Server;
+
 
         public override bool SendToNetwork(byte[] Data) 
         {
@@ -75,7 +85,7 @@ namespace Telnet
             }
             catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
 
             return true;
@@ -89,7 +99,8 @@ namespace Telnet
             }
             catch (Exception ex)
             {
-                throw;
+                _Log(ex.Message);
+                throw ex;
             }
 
             return;
