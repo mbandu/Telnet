@@ -2,6 +2,7 @@
 C# telnet client and server with RFC2217 option.
 
 Use SerialPortStream from https://github.com/Ellerbach/serialapp for Linux Serial port.
+
 Use System.IO.Ports.SerialPort for Windows.
 
 
