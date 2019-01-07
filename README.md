@@ -1,9 +1,15 @@
 # Telnet
 C# telnet client and server with RFC2217 option.
 
+Use SerialPortStream from https://github.com/Ellerbach/serialapp for Linux Serial port.
+Use System.IO.Ports.SerialPort for Windows.
+
+
 
 
 # Requirement
+This project used VSCode.
+
 It's normal that you get this error.
 
 ![Serial list](./serial3.png)
@@ -19,3 +25,7 @@ cd dll/serialunix/
 
 
 # Example
+Build using 'Production' configuration for Linux build.
+```CMD
+dotnet publish  --configuration Production
+```
