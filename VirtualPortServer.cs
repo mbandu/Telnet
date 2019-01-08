@@ -95,9 +95,16 @@ namespace Telnet
                 #if LINUX
                     _Log("Using SerialPortStream class.");
                     serialDevice = new SerialPortStream(SerialDeviceName);
+                    serialDevice.DataReceived += serailDevice_OnReceive;
+                    serialDevice.ErrorReceived += serailDevice_OnCommError;
+                    serialDevice.PinChanged += serailDevice_OnModemStatusChanged;
                 #else
                     _Log("Using System.IO.Ports.SerialPort class.");
                     serialDevice = new System.IO.Ports.SerialPort(SerialDeviceName);
+                    serialDevice.DataReceived += new SerialDataReceivedEventHandler(serailDevice_OnReceive);
+                    serialDevice.ErrorReceived += new SerialErrorReceivedEventHandler(serailDevice_OnCommError);
+                    serialDevice.PinChanged += new SerialPinChangedEventHandler(serailDevice_OnModemStatusChanged);
+
                 #endif
                 telnetServer.Port = TelnetTCPPortNumber;
                 telnetServer.SetOption(44, rfc2217Option);
@@ -348,5 +355,56 @@ namespace Telnet
             serialDevice.BaudRate = (int)rfc2217Option.BaudRate;
         }
  
+        #if LINUX
+            void serailDevice_OnCommError(object sender, SerialErrorReceivedEventArgs e)
+            {
+                rfc2217Option.SetLineStatus(serialDevice.BytesToRead != 0,
+                                            (e.EventType & SerialError.Overrun) == SerialError.Overrun, 
+                                            (e.EventType & SerialError.RXParity) == SerialError.RXParity, 
+                                            (e.EventType & SerialError.Frame) == SerialError.Frame, 
+                                            serialDevice.BreakState, false, false, false);  
+            }
+
+            void serailDevice_OnModemStatusChanged(object sender, SerialPinChangedEventArgs e)
+            {
+                rfc2217Option.SetModemState(serialDevice.CtsHolding, 
+                                            serialDevice.DsrHolding, 
+                                            (e.EventType & SerialPinChange.Ring) == SerialPinChange.Ring, 
+                                            serialDevice.CDHolding);
+            }
+
+            void serailDevice_OnReceive(object sender, SerialDataReceivedEventArgs e)
+            {
+                byte[] Data = new byte[serialDevice.BytesToRead];
+                serialDevice.Read(Data, 0, Data.Length);
+
+                telnetServer.SendToNetwork(Data);
+            }
+        #else
+            void serailDevice_OnCommError(object sender, SerialErrorReceivedEventArgs e)
+            {
+                rfc2217Option.SetLineStatus(serialDevice.BytesToRead != 0,
+                                            (e.EventType & SerialError.Overrun) == SerialError.Overrun, 
+                                            (e.EventType & SerialError.RXParity) == SerialError.RXParity, 
+                                            (e.EventType & SerialError.Frame) == SerialError.Frame, 
+                                            serialDevice.BreakState, false, false, false);  
+            }
+
+            void serailDevice_OnModemStatusChanged(object sender, SerialPinChangedEventArgs e)
+            {
+                rfc2217Option.SetModemState(serialDevice.CtsHolding, 
+                                            serialDevice.DsrHolding, 
+                                            (e.EventType & SerialPinChange.Ring) == SerialPinChange.Ring, 
+                                            serialDevice.CDHolding);
+            }
+
+            void serailDevice_OnReceive(object sender, SerialDataReceivedEventArgs e)
+            {
+                byte[] Data = new byte[serialDevice.BytesToRead];
+                serialDevice.Read(Data, 0, Data.Length);
+
+                telnetServer.SendToNetwork(Data);
+            }
+        #endif
     }
 }
