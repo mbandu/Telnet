@@ -20,9 +20,13 @@ namespace Telnet
 {
     public class VirtualSerialPortServer: TelnetServer
     {
+        // NLogger instance
         private readonly ILogger<VirtualSerialPortServer> _logger;
 
+        // Telnet server
         private Telnet.TelnetServer telnetServer = new TelnetServer();
+
+        // RFC2217 option for Telnet option
         private Telnet.RFC2217Option rfc2217Option = new RFC2217Option(true);
 
 #if LINUX
